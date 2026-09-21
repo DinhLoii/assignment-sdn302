@@ -1,69 +1,271 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import * as React from "react";
+import { TaskItem, TaskFilterState, TaskStatus } from "@/types";
+import { TaskStats } from "@/components/tasks/TaskStats";
+import { TaskFilters } from "@/components/tasks/TaskFilters";
+import { TaskList } from "@/components/tasks/TaskList";
+import { TaskCreateModal } from "@/components/tasks/TaskCreateModal";
+import { TaskEditModal } from "@/components/tasks/TaskEditModal";
+import { TaskDeleteDialog } from "@/components/tasks/TaskDeleteDialog";
+import { Button } from "@/components/ui/Button";
+import { PlusCircle, Sparkles, RefreshCw, Users } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+
+export default function HomePage() {
+  const [tasks, setTasks] = React.useState<TaskItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  // Filter & Search State
+  const [filters, setFilters] = React.useState<TaskFilterState>({
+    status: "ALL",
+    priority: "ALL",
+    search: "",
+  });
+
+  // Modal States
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [isEditOpen, setIsEditOpen] = React.useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const [selectedTask, setSelectedTask] = React.useState<TaskItem | null>(null);
+
+  // Initial load with cleanup flag to adhere to React 19 best practices
+  React.useEffect(() => {
+    let ignore = false;
+
+    async function loadInitialTasks() {
+      try {
+        const res = await fetch("/api/tasks");
+        const json = await res.json();
+        if (!ignore && json.success && Array.isArray(json.data)) {
+          setTasks(json.data);
+        }
+      } catch (err) {
+        if (!ignore) {
+          console.error("Error fetching tasks:", err);
+          toast.error("Failed to connect to tasks API.");
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadInitialTasks();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      const res = await fetch("/api/tasks");
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setTasks(json.data);
+        toast.success("Tasks refreshed from database!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to refresh tasks.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  const filteredTasks = React.useMemo(() => {
+    return tasks.filter((task) => {
+      // Status filter
+      if (filters.status !== "ALL" && task.status !== filters.status) {
+        return false;
+      }
+      // Priority filter
+      if (filters.priority !== "ALL" && task.priority !== filters.priority) {
+        return false;
+      }
+      // Search filter (title or description)
+      if (filters.search.trim() !== "") {
+        const query = filters.search.toLowerCase().trim();
+        const inTitle = task.title.toLowerCase().includes(query);
+        const inDesc = task.description?.toLowerCase().includes(query) || false;
+        if (!inTitle && !inDesc) return false;
+      }
+      return true;
+    });
+  }, [tasks, filters]);
+
+  // CRUD Handlers with instant state update (no page reload)
+  const handleTaskCreated = (newTask: TaskItem) => {
+    setTasks((prev) => [newTask, ...prev]);
+  };
+
+  const handleTaskUpdated = (updatedTask: TaskItem) => {
+    setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+  };
+
+  const handleTaskDeleted = (deletedId: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== deletedId));
+  };
+
+  const handleQuickStatusChange = async (task: TaskItem, newStatus: TaskStatus) => {
+    // Optimistic update
+    const previousTasks = [...tasks];
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, status: newStatus } : t))
+    );
+
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to update status");
+      }
+
+      toast.success(`Task moved to ${newStatus.replace("_", " ")}`);
+    } catch (err) {
+      // Rollback on error
+      setTasks(previousTasks);
+      toast.error(err instanceof Error ? err.message : "Failed to update task status");
+    }
+  };
+
+  // Open Edit Modal
+  const openEditModal = (task: TaskItem) => {
+    setSelectedTask(task);
+    setIsEditOpen(true);
+  };
+
+  // Open Delete Dialog
+  const openDeleteDialog = (task: TaskItem) => {
+    setSelectedTask(task);
+    setIsDeleteOpen(true);
+  };
+
+  const isFiltered =
+    filters.status !== "ALL" || filters.priority !== "ALL" || filters.search.trim() !== "";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="space-y-8 pb-12">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/50 via-slate-900/60 to-slate-950 border border-indigo-900/40 p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold tracking-wide">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            Next.js 15 &bull; Prisma 6 &bull; Supabase PostgreSQL
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            Task & Team Management
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+            A public, full-stack CRUD task management dashboard connected live to Supabase PostgreSQL.
+            Create, update, prioritize, and track tasks seamlessly without requiring authentication.
           </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              variant="primary"
+              size="md"
+              className="shadow-lg shadow-indigo-600/30"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Create Task
+            </Button>
+
+            <Link href="/teams">
+              <Button variant="secondary" size="md">
+                <Users className="w-4 h-4" />
+                Explore Teams (Ass2 Preview)
+              </Button>
+            </Link>
+
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 border border-slate-700/60 transition-colors cursor-pointer"
+              title="Refresh tasks from database"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Ambient background glow */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+      </section>
+
+      {/* Task Statistics */}
+      <section>
+        <TaskStats tasks={tasks} />
+      </section>
+
+      {/* Task Filter & Search Bar */}
+      <section>
+        <TaskFilters
+          filters={filters}
+          onChange={setFilters}
+          totalResults={filteredTasks.length}
+        />
+      </section>
+
+      {/* Task List / Grid */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+            <span>Tasks</span>
+            <span className="text-xs font-normal text-slate-400">
+              ({filteredTasks.length} {filteredTasks.length === 1 ? "task" : "tasks"})
+            </span>
+          </h2>
+
+          <Button onClick={() => setIsCreateOpen(true)} variant="outline" size="sm">
+            <PlusCircle className="w-3.5 h-3.5" />
+            Add Task
+          </Button>
         </div>
-      </main>
+
+        <TaskList
+          tasks={filteredTasks}
+          isLoading={isLoading}
+          onEdit={openEditModal}
+          onDelete={openDeleteDialog}
+          onStatusChange={handleQuickStatusChange}
+          onCreateNew={() => setIsCreateOpen(true)}
+          isFiltered={isFiltered}
+        />
+      </section>
+
+      {/* Modals */}
+      <TaskCreateModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onTaskCreated={handleTaskCreated}
+      />
+
+      <TaskEditModal
+        task={selectedTask}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onTaskUpdated={handleTaskUpdated}
+      />
+
+      <TaskDeleteDialog
+        task={selectedTask}
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onTaskDeleted={handleTaskDeleted}
+      />
     </div>
   );
 }
