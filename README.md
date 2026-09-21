@@ -94,7 +94,7 @@ erDiagram
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git clone https://github.com/DinhLoii/assignment-sdn302.git
 cd assignment-1
 ```
 

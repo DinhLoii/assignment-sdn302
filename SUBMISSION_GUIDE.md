@@ -13,7 +13,7 @@
 ---
 
 ## 2. Project Links
-- **Public GitHub Repository:** `https://github.com/[YOUR_USERNAME]/[YOUR_REPO_NAME]`
+- **Public GitHub Repository:** `https://github.com/DinhLoii/assignment-sdn302`
   *(Ensure repository visibility is set to Public and contains at least 5 meaningful commits)*
 - **Live Deployed Vercel Application:** `https://[YOUR_APP_NAME].vercel.app`
   *(Ensure the public task list is accessible and functional without login)*

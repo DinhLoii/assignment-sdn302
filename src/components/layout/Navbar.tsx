@@ -77,7 +77,7 @@ export const Navbar: React.FC = () => {
             </button>
 
             <a
-              href="https://github.com"
+              href="https://github.com/DinhLoii/assignment-sdn302"
               target="_blank"
               rel="noreferrer"
               className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
