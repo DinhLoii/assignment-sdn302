@@ -1,7 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { updateTaskSchema } from "@/lib/validations/task";
 import { TaskPriority, TaskStatus } from "@prisma/client";
+import {
+  successResponse,
+  errorResponse,
+  validationErrorResponse,
+  notFoundResponse,
+  internalErrorResponse,
+} from "@/lib/api-response";
+import { applyApiMiddleware, applyMiddlewareHeaders } from "@/lib/api-middleware";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -9,6 +17,13 @@ interface RouteParams {
 
 // GET /api/tasks/:id - Retrieve a single task by ID
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  const middlewareResult = await applyApiMiddleware(request, {
+    rateLimit: { windowMs: 60 * 1000, maxRequests: 100 },
+    cors: { enabled: true, origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] },
+  });
+
+  if (!middlewareResult.success) return middlewareResult.response!;
+
   try {
     const { id } = await params;
 
@@ -17,62 +32,49 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!task) {
-      return NextResponse.json(
-        { success: false, error: `Task with ID ${id} not found` },
-        { status: 404 }
-      );
+      return notFoundResponse("Task");
     }
 
-    return NextResponse.json({ success: true, data: task });
+    const response = successResponse(task);
+    if (middlewareResult.headers) {
+      return applyMiddlewareHeaders(response, middlewareResult.headers);
+    }
+    return response;
   } catch (error) {
-    console.error("Error retrieving task:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to retrieve task",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse();
   }
 }
 
 // PUT /api/tasks/:id - Update an existing task
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const middlewareResult = await applyApiMiddleware(request, {
+    rateLimit: { windowMs: 60 * 1000, maxRequests: 50 },
+    cors: { enabled: true, origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] },
+  });
+
+  if (!middlewareResult.success) return middlewareResult.response!;
+
   try {
     const { id } = await params;
 
-    // Check if task exists
     const existingTask = await prisma.task.findUnique({
       where: { id },
     });
 
     if (!existingTask) {
-      return NextResponse.json(
-        { success: false, error: `Task with ID ${id} not found` },
-        { status: 404 }
-      );
+      return notFoundResponse("Task");
     }
 
     const body = await request.json();
 
-    // Validate payload with Zod
     const validation = updateTaskSchema.safeParse(body);
     if (!validation.success) {
       const fieldErrors = validation.error.flatten().fieldErrors;
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Validation failed",
-          details: fieldErrors,
-        },
-        { status: 400 }
-      );
+      return validationErrorResponse(fieldErrors);
     }
 
     const { title, description, status, priority, dueDate } = validation.data;
 
-    // Build update data object
     const updateData: {
       title?: string;
       description?: string | null;
@@ -92,59 +94,46 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data: updateData,
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Task updated successfully",
-      data: updatedTask,
-    });
+    const response = successResponse(updatedTask);
+    if (middlewareResult.headers) {
+      return applyMiddlewareHeaders(response, middlewareResult.headers);
+    }
+    return response;
   } catch (error) {
-    console.error("Error updating task:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to update task",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse();
   }
 }
 
 // DELETE /api/tasks/:id - Delete a task by ID
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const middlewareResult = await applyApiMiddleware(request, {
+    rateLimit: { windowMs: 60 * 1000, maxRequests: 30 },
+    cors: { enabled: true, origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] },
+  });
+
+  if (!middlewareResult.success) return middlewareResult.response!;
+
   try {
     const { id } = await params;
 
-    // Check if task exists
     const existingTask = await prisma.task.findUnique({
       where: { id },
     });
 
     if (!existingTask) {
-      return NextResponse.json(
-        { success: false, error: `Task with ID ${id} not found` },
-        { status: 404 }
-      );
+      return notFoundResponse("Task");
     }
 
     await prisma.task.delete({
       where: { id },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Task deleted successfully",
-      deletedId: id,
-    });
+    const response = successResponse({ deletedId: id });
+    if (middlewareResult.headers) {
+      return applyMiddlewareHeaders(response, middlewareResult.headers);
+    }
+    return response;
   } catch (error) {
-    console.error("Error deleting task:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to delete task",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse();
   }
 }

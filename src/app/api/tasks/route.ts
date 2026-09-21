@@ -1,17 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { createTaskSchema } from "@/lib/validations/task";
 import { TaskPriority, TaskStatus } from "@prisma/client";
+import {
+  successResponse,
+  errorResponse,
+  validationErrorResponse,
+  internalErrorResponse,
+} from "@/lib/api-response";
+import { applyApiMiddleware, applyMiddlewareHeaders } from "@/lib/api-middleware";
 
 // GET /api/tasks - Retrieve all tasks with optional filtering & search
 export async function GET(request: NextRequest) {
+  const middlewareResult = await applyApiMiddleware(request, {
+    rateLimit: { windowMs: 60 * 1000, maxRequests: 100 },
+    cors: { enabled: true, origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] },
+  });
+
+  if (!middlewareResult.success) return middlewareResult.response!;
+
   try {
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get("status");
     const priorityParam = searchParams.get("priority");
     const searchParam = searchParams.get("search");
 
-    // Build Prisma where clause
     const where: {
       status?: TaskStatus;
       priority?: TaskPriority;
@@ -38,41 +51,32 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: tasks,
-      count: tasks.length,
-    });
+    const response = successResponse({ tasks, count: tasks.length });
+    if (middlewareResult.headers) {
+      return applyMiddlewareHeaders(response, middlewareResult.headers);
+    }
+    return response;
   } catch (error) {
-    console.error("Error fetching tasks:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to fetch tasks from database",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse();
   }
 }
 
 // POST /api/tasks - Create a new task
 export async function POST(request: NextRequest) {
+  const middlewareResult = await applyApiMiddleware(request, {
+    rateLimit: { windowMs: 60 * 1000, maxRequests: 50 },
+    cors: { enabled: true, origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] },
+  });
+
+  if (!middlewareResult.success) return middlewareResult.response!;
+
   try {
     const body = await request.json();
 
-    // Validate with Zod
     const validation = createTaskSchema.safeParse(body);
     if (!validation.success) {
       const fieldErrors = validation.error.flatten().fieldErrors;
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Validation failed",
-          details: fieldErrors,
-        },
-        { status: 400 }
-      );
+      return validationErrorResponse(fieldErrors);
     }
 
     const { title, description, status, priority, dueDate } = validation.data;
@@ -87,23 +91,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Task created successfully",
-        data: newTask,
-      },
-      { status: 201 }
-    );
+    const response = successResponse(newTask, 201);
+    if (middlewareResult.headers) {
+      return applyMiddlewareHeaders(response, middlewareResult.headers);
+    }
+    return response;
   } catch (error) {
-    console.error("Error creating task:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to create task",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse();
   }
 }

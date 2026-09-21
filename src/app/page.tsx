@@ -39,8 +39,8 @@ export default function HomePage() {
       try {
         const res = await fetch("/api/tasks");
         const json = await res.json();
-        if (!ignore && json.success && Array.isArray(json.data)) {
-          setTasks(json.data);
+        if (!ignore && json.success && json.data?.tasks) {
+          setTasks(json.data.tasks);
         }
       } catch (err) {
         if (!ignore) {
@@ -66,8 +66,8 @@ export default function HomePage() {
       setIsRefreshing(true);
       const res = await fetch("/api/tasks");
       const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        setTasks(json.data);
+      if (json.success && json.data?.tasks) {
+        setTasks(json.data.tasks);
         toast.success("Tasks refreshed from database!");
       }
     } catch (err) {
@@ -130,6 +130,10 @@ export default function HomePage() {
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Failed to update status");
+      }
+
+      if (json.data) {
+        setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, ...json.data } : t)));
       }
 
       toast.success(`Task moved to ${newStatus.replace("_", " ")}`);
