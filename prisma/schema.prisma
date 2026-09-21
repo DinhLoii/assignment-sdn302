@@ -1,5 +1,5 @@
 // Prisma Schema for Task & Team Management Application
-// Compatible with Supabase PostgreSQL & Prisma 6+
+// Compatible with Supabase PostgreSQL & Prisma 7+
 
 generator client {
   provider = "prisma-client-js"

@@ -47,7 +47,7 @@ async function main() {
   const sampleTasks = [
     {
       title: "Design System Architecture & Setup Next.js 15",
-      description: "Initialize the project repository with App Router, TypeScript, Tailwind CSS, and Prisma 6 ORM.",
+      description: "Initialize the project repository with App Router, TypeScript, Tailwind CSS, and Prisma 7 ORM.",
       status: TaskStatus.DONE,
       priority: TaskPriority.HIGH,
       dueDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // yesterday

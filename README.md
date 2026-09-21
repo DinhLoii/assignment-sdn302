@@ -14,7 +14,7 @@
 
 ## 🌟 Overview
 
-**TaskPulse** is the technical foundation for a full-stack **Task & Team Management Application**. Built with **Next.js 15 App Router**, **Prisma 6 ORM**, and **Supabase Cloud PostgreSQL**, this project enables teams and individuals to organize, prioritize, and track tasks efficiently with a public, responsive CRUD interface.
+**TaskPulse** is the technical foundation for a full-stack **Task & Team Management Application**. Built with **Next.js 15 App Router**, **Prisma 7 ORM**, and **Supabase Cloud PostgreSQL**, this project enables teams and individuals to organize, prioritize, and track tasks efficiently with a public, responsive CRUD interface.
 
 This project fulfills **100% of the functional and bonus requirements** for Assignment 1, establishing a robust architecture for multi-user team collaboration in Assignments 2 and 3.
 
@@ -29,13 +29,13 @@ This project fulfills **100% of the functional and bonus requirements** for Assi
 - **Modern UI & Micro-interactions**: Dark slate palette, glassmorphism, responsive mobile/desktop layout, animated badges, and **Sonner** toast notifications.
 - **Teams Section Placeholder**: Sleek "Coming Soon" preview page (`/teams`) outlining upcoming features for Assignment 2.
 - **CI/CD Pipeline (Bonus)**: GitHub Actions workflow checking ESLint, TypeScript types, and production build on every push.
-- **Prisma Studio & Seed Data**: Pre-configured `prisma/seed.ts` script to immediately populate the database with realistic sample data.
+- **Prisma Studio & Seed Data**: Pre-configured `prisma.config.ts` and `prisma/seed.ts` script to immediately populate the database with realistic sample data.
 
 ---
 
 ## 🗄️ Database Architecture & Entity Relationship Diagram (ERD)
 
-The application uses **Prisma 6** connected to **Supabase Cloud PostgreSQL**. The schema defines four core models: `User`, `Team`, `TeamMember`, and `Task`.
+The application uses **Prisma 7** connected to **Supabase Cloud PostgreSQL**. The schema defines four core models: `User`, `Team`, `TeamMember`, and `Task`.
 
 ```mermaid
 erDiagram

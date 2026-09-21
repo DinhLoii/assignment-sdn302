@@ -160,7 +160,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold tracking-wide">
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            Next.js 15 &bull; Prisma 6 &bull; Supabase PostgreSQL
+            Next.js 15 &bull; Prisma 7 &bull; Supabase PostgreSQL
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">

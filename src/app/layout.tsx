@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 export const metadata: Metadata = {
   title: "TaskPulse | Task & Team Management Application",
   description:
-    "A modern Task & Team Management application built with Next.js 15, Prisma 6, Supabase PostgreSQL, and Tailwind CSS. Assignment 1 foundation.",
+    "A modern Task & Team Management application built with Next.js 15, Prisma 7, Supabase PostgreSQL, and Tailwind CSS. Assignment 1 foundation.",
 };
 
 export default function RootLayout({

@@ -33,7 +33,7 @@ export const Footer: React.FC = () => {
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300">
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-              Prisma 6
+              Prisma 7
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300">
               <Server className="w-3.5 h-3.5 text-violet-400" />

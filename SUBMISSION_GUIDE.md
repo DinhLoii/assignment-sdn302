@@ -23,7 +23,7 @@
 ## 3. Database Design & Supabase Integration
 
 ### 3.1. Prisma Schema Overview
-The database is built using **Prisma 6 ORM** connected to a cloud-hosted **PostgreSQL** instance on **Supabase**. The schema defines four interconnected models:
+The database is built using **Prisma 7 ORM** connected to a cloud-hosted **PostgreSQL** instance on **Supabase**. The schema defines four interconnected models:
 1. **`User`**: Represents system users with `id`, `name`, `email` (unique), `password`, and timestamps. In Assignment 2, this model will be integrated with authentication.
 2. **`Team`**: Represents workspaces/teams created by users, containing `id`, `name`, `description`, `ownerId` (foreign key to `User`), and timestamps.
 3. **`TeamMember`**: A join table managing the many-to-many relationship between users and teams, storing `teamId`, `userId`, `role` (`ADMIN` or `MEMBER`), and `joinedAt`.
