@@ -30,18 +30,18 @@ export default function TeamsPage() {
     <div className="max-w-4xl mx-auto py-8 sm:py-12 space-y-10">
       {/* Header */}
       <div className="space-y-4 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-800/50 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
           <CalendarCheck2 className="w-3.5 h-3.5" />
           Assignment 2 Preview
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Team Management & Collaboration
         </h1>
 
-        <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          The <span className="text-indigo-400 font-medium">Team</span> and{" "}
-          <span className="text-indigo-400 font-medium">TeamMember</span> models are already defined in our
+        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          The <span className="text-indigo-600 dark:text-indigo-400 font-medium">Team</span> and{" "}
+          <span className="text-indigo-600 dark:text-indigo-400 font-medium">TeamMember</span> models are already defined in our
           Prisma schema. Full team workspace features, invitations, and role management are coming in
           Assignment 2.
         </p>
@@ -63,13 +63,13 @@ export default function TeamsPage() {
           return (
             <div
               key={feat.title}
-              className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all duration-200 backdrop-blur-sm space-y-3"
+              className="p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-200 backdrop-blur-sm space-y-3 shadow-sm hover:shadow-md"
             >
-              <div className="w-10 h-10 rounded-xl bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-center text-indigo-400">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <Icon className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-semibold text-slate-100">{feat.title}</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{feat.title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {feat.description}
               </p>
             </div>
@@ -78,15 +78,15 @@ export default function TeamsPage() {
       </div>
 
       {/* Schema Notice */}
-      <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800/60 text-xs text-slate-400 space-y-2">
-        <p className="font-semibold text-slate-300 text-sm">
+      <div className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 text-xs text-slate-600 dark:text-slate-400 space-y-2">
+        <p className="font-semibold text-slate-800 dark:text-slate-300 text-sm">
           💡 Database Schema Readiness:
         </p>
         <p>
-          The tables <code className="text-indigo-300 font-mono">teams</code> and{" "}
-          <code className="text-indigo-300 font-mono">team_members</code> have been generated in Supabase
-          via Prisma migration. In Assignment 1, the <code className="text-indigo-300 font-mono">teamId</code>{" "}
-          and <code className="text-indigo-300 font-mono">assigneeId</code> fields on tasks are optional,
+          The tables <code className="text-indigo-600 dark:text-indigo-300 font-mono">teams</code> and{" "}
+          <code className="text-indigo-600 dark:text-indigo-300 font-mono">team_members</code> have been generated in Supabase
+          via Prisma migration. In Assignment 1, the <code className="text-indigo-600 dark:text-indigo-300 font-mono">teamId</code>{" "}
+          and <code className="text-indigo-600 dark:text-indigo-300 font-mono">assigneeId</code> fields on tasks are optional,
           ready to be connected when team authentication launches.
         </p>
       </div>

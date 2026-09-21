@@ -50,7 +50,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
     filters.status !== "ALL" || filters.priority !== "ALL" || filters.search.trim() !== "";
 
   return (
-    <div className="space-y-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 backdrop-blur-sm">
+    <div className="space-y-4 bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 backdrop-blur-sm shadow-sm transition-colors">
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
@@ -60,7 +60,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
             value={filters.search}
             onChange={handleSearchChange}
             placeholder="Search tasks by title or description..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-slate-950/80 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
           />
         </div>
 
@@ -71,10 +71,10 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
             <select
               value={filters.priority}
               onChange={handlePriorityChange}
-              className="w-full pl-8 pr-8 py-2 text-xs font-medium bg-slate-950/80 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+              className="w-full pl-8 pr-8 py-2 text-xs font-medium bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
             >
               {priorityOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-slate-900 text-slate-100">
+                <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                   {opt.label}
                 </option>
               ))}
@@ -90,7 +90,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
           {isFiltered && (
             <button
               onClick={handleReset}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors"
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 transition-colors"
               title="Reset filters"
             >
               <RotateCcw className="w-4 h-4" />
@@ -100,7 +100,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
         <div className="flex flex-wrap items-center gap-1.5">
           {statusTabs.map((tab) => {
             const isActive = filters.status === tab.value;
@@ -112,7 +112,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
                   "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer",
                   isActive
                     ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60"
                 )}
               >
                 {tab.label}
@@ -121,8 +121,8 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
           })}
         </div>
 
-        <span className="text-xs text-slate-400">
-          Showing <span className="font-semibold text-slate-200">{totalResults}</span> task
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          Showing <span className="font-semibold text-slate-900 dark:text-slate-200">{totalResults}</span> task
           {totalResults === 1 ? "" : "s"}
         </span>
       </div>

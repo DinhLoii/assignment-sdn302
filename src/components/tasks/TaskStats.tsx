@@ -24,32 +24,32 @@ export const TaskStats: React.FC<TaskStatsProps> = ({ tasks }) => {
       label: "Total Tasks",
       value: stats.total,
       icon: Layers,
-      color: "text-indigo-400",
-      bg: "bg-indigo-950/30 border-indigo-800/40",
+      color: "text-indigo-600 dark:text-indigo-400",
+      bg: "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-100 dark:border-indigo-800/40",
       subtext: `${completionRate}% completed`,
     },
     {
       label: "To Do",
       value: stats.todo,
       icon: ListTodo,
-      color: "text-slate-400",
-      bg: "bg-slate-900/60 border-slate-800",
+      color: "text-slate-600 dark:text-slate-400",
+      bg: "bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-sm",
       subtext: "Awaiting action",
     },
     {
       label: "In Progress",
       value: stats.inProgress,
       icon: Clock,
-      color: "text-amber-400",
-      bg: "bg-amber-950/20 border-amber-800/30",
+      color: "text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-50/70 dark:bg-amber-950/20 border-amber-100 dark:border-amber-800/30 shadow-sm",
       subtext: "Currently active",
     },
     {
       label: "Completed",
       value: stats.done,
       icon: CheckCircle2,
-      color: "text-emerald-400",
-      bg: "bg-emerald-950/20 border-emerald-800/30",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-800/30 shadow-sm",
       subtext: "Tasks finished",
     },
   ];
@@ -61,18 +61,18 @@ export const TaskStats: React.FC<TaskStatsProps> = ({ tasks }) => {
         return (
           <div
             key={card.label}
-            className={`p-4 sm:p-5 rounded-xl border ${card.bg} backdrop-blur-sm transition-all duration-200 hover:border-slate-700/80 shadow-sm`}
+            className={`p-4 sm:p-5 rounded-2xl border ${card.bg} backdrop-blur-sm transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">{card.label}</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{card.label}</span>
               <Icon className={`w-4 h-4 ${card.color}`} />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {card.value}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-400">{card.subtext}</p>
+            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{card.subtext}</p>
           </div>
         );
       })}

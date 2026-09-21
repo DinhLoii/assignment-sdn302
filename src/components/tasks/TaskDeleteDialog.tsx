@@ -56,14 +56,14 @@ export const TaskDeleteDialog: React.FC<TaskDeleteDialogProps> = ({
       maxWidth="sm"
     >
       <div className="space-y-4">
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-950/30 border border-rose-800/40 text-rose-300">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
+        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 text-rose-800 dark:text-rose-300">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           <div className="text-xs space-y-1">
-            <p className="font-semibold text-rose-200">Are you absolutely sure?</p>
-            <p className="text-rose-300/80">
+            <p className="font-semibold text-rose-900 dark:text-rose-200">Are you absolutely sure?</p>
+            <p className="text-rose-700/90 dark:text-rose-300/80">
               This action cannot be undone. This will permanently delete:
             </p>
-            <p className="font-medium text-white italic line-clamp-2">
+            <p className="font-medium text-slate-900 dark:text-white italic line-clamp-2">
               &quot;{task?.title}&quot;
             </p>
           </div>

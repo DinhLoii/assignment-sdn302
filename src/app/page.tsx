@@ -77,6 +77,8 @@ export default function HomePage() {
       setIsRefreshing(false);
     }
   };
+
+  // Client-side filtering
   const filteredTasks = React.useMemo(() => {
     return tasks.filter((task) => {
       // Status filter
@@ -156,18 +158,18 @@ export default function HomePage() {
   return (
     <div className="space-y-8 pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/50 via-slate-900/60 to-slate-950 border border-indigo-900/40 p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50/90 via-white to-slate-50 border border-indigo-100 dark:from-indigo-950/50 dark:via-slate-900/60 dark:to-slate-950 dark:border-indigo-900/40 p-6 sm:p-10 shadow-xl shadow-indigo-100/40 dark:shadow-2xl backdrop-blur-xl transition-all">
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold tracking-wide">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-semibold tracking-wide">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
             Next.js 15 &bull; Prisma 7 &bull; Supabase PostgreSQL
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
             Task & Team Management
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
             A public, full-stack CRUD task management dashboard connected live to Supabase PostgreSQL.
             Create, update, prioritize, and track tasks seamlessly without requiring authentication.
           </p>
@@ -193,7 +195,7 @@ export default function HomePage() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 border border-slate-700/60 transition-colors cursor-pointer"
+              className="p-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 transition-colors cursor-pointer"
               title="Refresh tasks from database"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -202,7 +204,7 @@ export default function HomePage() {
         </div>
 
         {/* Ambient background glow */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* Task Statistics */}
@@ -222,9 +224,9 @@ export default function HomePage() {
       {/* Task List / Grid */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span>Tasks</span>
-            <span className="text-xs font-normal text-slate-400">
+            <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
               ({filteredTasks.length} {filteredTasks.length === 1 ? "task" : "tasks"})
             </span>
           </h2>
