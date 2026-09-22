@@ -4,19 +4,18 @@
 ---
 
 ## 1. Student Information
-- **Student Full Name:** [Your Name]
-- **Student ID:** [Your Student ID, e.g. QE123456]
+- **Student Full Name:** DINH VAN LOI
+- **Student ID:** QE190167
+- **Class:** SE19C
 - **Course:** SDN302 – Web Development with Node.js & Next.js
 - **Assignment:** Assignment 1 – Task & Team Management App: Project Setup, Prisma & Deployment
-- **Date of Submission:** [Date]
+- **Date of Submission:** 22/09/2026
 
 ---
 
 ## 2. Project Links
-- **Public GitHub Repository:** `https://github.com/DinhLoii/assignment-sdn302`
-  *(Ensure repository visibility is set to Public and contains at least 5 meaningful commits)*
-- **Live Deployed Vercel Application:** `https://[YOUR_APP_NAME].vercel.app`
-  *(Ensure the public task list is accessible and functional without login)*
+- **Public GitHub Repository:** [https://github.com/DinhLoii/assignment-sdn302](https://github.com/DinhLoii/assignment-sdn302)
+- **Live Deployed Vercel Application:** [TaskPulse | Task & Team Management Application](https://assignment-sdn302.vercel.app/)
 
 ---
 
