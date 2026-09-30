@@ -22,8 +22,9 @@ enum TaskPriority {
 }
 
 enum TeamRole {
-  ADMIN
+  OWNER
   MEMBER
+  ADMIN
 }
 
 model User {
@@ -34,9 +35,10 @@ model User {
   createdAt DateTime     @default(now())
 
   // Relations
-  teamsOwned  Team[]       @relation("TeamOwner")
-  teamMembers TeamMember[]
-  tasks       Task[]       @relation("AssignedTasks")
+  teamsOwned   Team[]       @relation("TeamOwner")
+  teamMembers  TeamMember[]
+  tasks        Task[]       @relation("AssignedTasks")
+  createdTasks Task[]       @relation("CreatedTasks")
 
   @@map("users")
 }
@@ -80,12 +82,14 @@ model Task {
   dueDate     DateTime?
   teamId      String?
   assigneeId  String?
+  creatorId   String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  // Relations (Optional for Assignment 1, active in Assignment 2 & 3)
-  team        Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  // Relations
+  team        Team?        @relation(fields: [teamId], references: [id], onDelete: Cascade)
   assignee    User?        @relation("AssignedTasks", fields: [assigneeId], references: [id], onDelete: SetNull)
+  creator     User?        @relation("CreatedTasks", fields: [creatorId], references: [id], onDelete: SetNull)
 
   @@map("tasks")
 }
