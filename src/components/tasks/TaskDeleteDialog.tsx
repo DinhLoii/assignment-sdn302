@@ -49,21 +49,18 @@ export const TaskDeleteDialog: React.FC<TaskDeleteDialogProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Delete Task"
-      maxWidth="sm"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Delete Task" maxWidth="sm">
       <div className="space-y-4">
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 text-rose-800 dark:text-rose-300">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
-          <div className="text-xs space-y-1">
-            <p className="font-semibold text-rose-900 dark:text-rose-200">Are you absolutely sure?</p>
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-rose-800 dark:border-rose-800/40 dark:bg-rose-950/30 dark:text-rose-300">
+          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-rose-600 dark:text-rose-400" />
+          <div className="space-y-1 text-xs">
+            <p className="font-semibold text-rose-900 dark:text-rose-200">
+              Are you absolutely sure?
+            </p>
             <p className="text-rose-700/90 dark:text-rose-300/80">
               This action cannot be undone. This will permanently delete:
             </p>
-            <p className="font-medium text-slate-900 dark:text-white italic line-clamp-2">
+            <p className="line-clamp-2 font-medium text-slate-900 italic dark:text-white">
               &quot;{task?.title}&quot;
             </p>
           </div>
@@ -73,12 +70,7 @@ export const TaskDeleteDialog: React.FC<TaskDeleteDialogProps> = ({
           <Button type="button" variant="ghost" onClick={onClose} disabled={isDeleting}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={handleDelete}
-            isLoading={isDeleting}
-          >
+          <Button type="button" variant="danger" onClick={handleDelete} isLoading={isDeleting}>
             Delete Permanently
           </Button>
         </div>

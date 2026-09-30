@@ -117,7 +117,7 @@ const TaskEditModalContent: React.FC<TaskEditModalContentProps> = ({
           error={errors.description}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Select
             label="Status"
             options={[
@@ -149,7 +149,7 @@ const TaskEditModalContent: React.FC<TaskEditModalContentProps> = ({
           error={errors.dueDate}
         />
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
