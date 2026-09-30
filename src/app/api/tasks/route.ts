@@ -4,11 +4,11 @@ import { createTaskSchema } from "@/lib/validations/task";
 import { TaskPriority, TaskStatus } from "@prisma/client";
 import {
   successResponse,
-  errorResponse,
   validationErrorResponse,
   internalErrorResponse,
 } from "@/lib/api-response";
 import { applyApiMiddleware, applyMiddlewareHeaders } from "@/lib/api-middleware";
+import { getAuthUser } from "@/lib/auth";
 
 // GET /api/tasks - Retrieve all tasks with optional filtering & search
 export async function GET(request: NextRequest) {
@@ -28,14 +28,25 @@ export async function GET(request: NextRequest) {
     const where: {
       status?: TaskStatus;
       priority?: TaskPriority;
-      OR?: Array<{ title?: { contains: string; mode: "insensitive" }; description?: { contains: string; mode: "insensitive" } }>;
+      OR?: Array<{
+        title?: { contains: string; mode: "insensitive" };
+        description?: { contains: string; mode: "insensitive" };
+      }>;
     } = {};
 
-    if (statusParam && statusParam !== "ALL" && Object.values(TaskStatus).includes(statusParam as TaskStatus)) {
+    if (
+      statusParam &&
+      statusParam !== "ALL" &&
+      Object.values(TaskStatus).includes(statusParam as TaskStatus)
+    ) {
       where.status = statusParam as TaskStatus;
     }
 
-    if (priorityParam && priorityParam !== "ALL" && Object.values(TaskPriority).includes(priorityParam as TaskPriority)) {
+    if (
+      priorityParam &&
+      priorityParam !== "ALL" &&
+      Object.values(TaskPriority).includes(priorityParam as TaskPriority)
+    ) {
       where.priority = priorityParam as TaskPriority;
     }
 
@@ -48,6 +59,17 @@ export async function GET(request: NextRequest) {
 
     const tasks = await prisma.task.findMany({
       where,
+      include: {
+        assignee: {
+          select: { id: true, name: true, email: true },
+        },
+        creator: {
+          select: { id: true, name: true, email: true },
+        },
+        team: {
+          select: { id: true, name: true },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -56,7 +78,7 @@ export async function GET(request: NextRequest) {
       return applyMiddlewareHeaders(response, middlewareResult.headers);
     }
     return response;
-  } catch (error) {
+  } catch {
     return internalErrorResponse();
   }
 }
@@ -71,6 +93,7 @@ export async function POST(request: NextRequest) {
   if (!middlewareResult.success) return middlewareResult.response!;
 
   try {
+    const auth = await getAuthUser(request);
     const body = await request.json();
 
     const validation = createTaskSchema.safeParse(body);
@@ -79,7 +102,7 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse(fieldErrors);
     }
 
-    const { title, description, status, priority, dueDate } = validation.data;
+    const { title, description, status, priority, dueDate, assigneeId } = validation.data;
 
     const newTask = await prisma.task.create({
       data: {
@@ -88,6 +111,16 @@ export async function POST(request: NextRequest) {
         status: status as TaskStatus,
         priority: priority as TaskPriority,
         dueDate: dueDate ? new Date(dueDate) : null,
+        assigneeId: assigneeId || null,
+        creatorId: auth?.id || null,
+      },
+      include: {
+        assignee: {
+          select: { id: true, name: true, email: true },
+        },
+        creator: {
+          select: { id: true, name: true, email: true },
+        },
       },
     });
 
@@ -96,7 +129,7 @@ export async function POST(request: NextRequest) {
       return applyMiddlewareHeaders(response, middlewareResult.headers);
     }
     return response;
-  } catch (error) {
+  } catch {
     return internalErrorResponse();
   }
 }
