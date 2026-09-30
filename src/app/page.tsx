@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { PlusCircle, Sparkles, RefreshCw, Users } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HomePage() {
   const [tasks, setTasks] = React.useState<TaskItem[]>([]);
@@ -116,9 +117,7 @@ export default function HomePage() {
   const handleQuickStatusChange = async (task: TaskItem, newStatus: TaskStatus) => {
     // Optimistic update
     const previousTasks = [...tasks];
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, status: newStatus } : t))
-    );
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: newStatus } : t)));
 
     try {
       const res = await fetch(`/api/tasks/${task.id}`, {
@@ -159,56 +158,73 @@ export default function HomePage() {
   const isFiltered =
     filters.status !== "ALL" || filters.priority !== "ALL" || filters.search.trim() !== "";
 
+  const { user } = useAuth();
+
   return (
     <div className="space-y-8 pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50/90 via-white to-slate-50 border border-indigo-100 dark:from-indigo-950/50 dark:via-slate-900/60 dark:to-slate-950 dark:border-indigo-900/40 p-6 sm:p-10 shadow-xl shadow-indigo-100/40 dark:shadow-2xl backdrop-blur-xl transition-all">
+      <section className="relative overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50/90 via-white to-slate-50 p-6 shadow-xl shadow-indigo-100/40 backdrop-blur-xl transition-all sm:p-10 dark:border-indigo-900/40 dark:from-indigo-950/50 dark:via-slate-900/60 dark:to-slate-950 dark:shadow-2xl">
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-semibold tracking-wide">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-            Next.js 15 &bull; Prisma 7 &bull; Supabase PostgreSQL
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-700 dark:text-indigo-300">
+            <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+            Assignment 2 &bull; JWT Auth &bull; Team Workspaces &bull; Role-Based Access Control
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-3xl leading-tight font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
             Task & Team Management
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-            A public, full-stack CRUD task management dashboard connected live to Supabase PostgreSQL.
-            Create, update, prioritize, and track tasks seamlessly without requiring authentication.
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300">
+            {user ? (
+              <>
+                Welcome back,{" "}
+                <strong className="text-indigo-600 dark:text-indigo-400">{user.name}</strong>!
+                Access your team workspaces, delegate tasks to members, or manage items on
+                interactive Kanban boards.
+              </>
+            ) : (
+              <>
+                A full-stack collaboration platform with user authentication, team workspaces,
+                role-based member management (Owner & Member), and interactive task tracking.
+              </>
+            )}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Button
-              onClick={() => setIsCreateOpen(true)}
-              variant="primary"
-              size="md"
-              className="shadow-lg shadow-indigo-600/30"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Create Task
-            </Button>
-
             <Link href="/teams">
-              <Button variant="secondary" size="md">
-                <Users className="w-4 h-4" />
-                Explore Teams (Ass2 Preview)
+              <Button
+                variant="primary"
+                size="md"
+                className="cursor-pointer shadow-lg shadow-indigo-600/30"
+              >
+                <Users className="h-4 w-4" />
+                Go to Teams Workspace
               </Button>
             </Link>
+
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              variant="outline"
+              size="md"
+              className="cursor-pointer"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Quick Add Task
+            </Button>
 
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="p-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg border border-slate-200 p-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700/60 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white"
               title="Refresh tasks from database"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
 
         {/* Ambient background glow */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/15" />
       </section>
 
       {/* Task Statistics */}
@@ -218,17 +234,13 @@ export default function HomePage() {
 
       {/* Task Filter & Search Bar */}
       <section>
-        <TaskFilters
-          filters={filters}
-          onChange={setFilters}
-          totalResults={filteredTasks.length}
-        />
+        <TaskFilters filters={filters} onChange={setFilters} totalResults={filteredTasks.length} />
       </section>
 
       {/* Task List / Grid */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
             <span>Tasks</span>
             <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
               ({filteredTasks.length} {filteredTasks.length === 1 ? "task" : "tasks"})
@@ -236,7 +248,7 @@ export default function HomePage() {
           </h2>
 
           <Button onClick={() => setIsCreateOpen(true)} variant="outline" size="sm">
-            <PlusCircle className="w-3.5 h-3.5" />
+            <PlusCircle className="h-3.5 w-3.5" />
             Add Task
           </Button>
         </div>
