@@ -19,7 +19,10 @@ export class ApiError extends Error {
   }
 }
 
-export function successResponse<T>(data: T, statusCode: number = 200): NextResponse<ApiResponse<T>> {
+export function successResponse<T>(
+  data: T,
+  statusCode: number = 200
+): NextResponse<ApiResponse<T>> {
   return NextResponse.json(
     {
       success: true,
@@ -38,7 +41,9 @@ export function errorResponse(
   const message = error instanceof Error ? error.message : error;
   const responseDetails = error instanceof ApiError ? error.details : details;
 
-  console.error(`API Error [${statusCode}]:`, message);
+  if (statusCode >= 500) {
+    console.error(`API Error [${statusCode}]:`, message);
+  }
 
   return NextResponse.json(
     {
@@ -51,7 +56,9 @@ export function errorResponse(
   );
 }
 
-export function validationErrorResponse(fieldErrors: Record<string, string[]>): NextResponse<ApiResponse> {
+export function validationErrorResponse(
+  fieldErrors: Record<string, string[]>
+): NextResponse<ApiResponse> {
   return errorResponse("Validation failed", 400, fieldErrors);
 }
 

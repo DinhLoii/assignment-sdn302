@@ -65,7 +65,10 @@ export async function applyApiMiddleware(
   return { success: true, headers };
 }
 
-export function applyMiddlewareHeaders(response: NextResponse, headers: Record<string, string>): NextResponse {
+export function applyMiddlewareHeaders(
+  response: NextResponse,
+  headers: Record<string, string>
+): NextResponse {
   for (const [key, value] of Object.entries(headers)) {
     response.headers.set(key, value);
   }
