@@ -29,6 +29,7 @@ export const createTaskSchema = z.object({
     .refine((val) => !val || !isNaN(Date.parse(val)), {
       message: "Please enter a valid date",
     }),
+  assigneeId: z.string().optional().nullable(),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();
