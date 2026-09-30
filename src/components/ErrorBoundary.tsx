@@ -39,10 +39,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-          <div className="max-w-md w-full text-center space-y-6">
-            <div className="w-16 h-16 mx-auto rounded-full bg-rose-100 dark:bg-rose-950/30 flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-rose-600 dark:text-rose-400" />
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+          <div className="w-full max-w-md space-y-6 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/30">
+              <AlertCircle className="h-8 w-8 text-rose-600 dark:text-rose-400" />
             </div>
 
             <div className="space-y-2">
@@ -56,11 +56,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
             <div className="flex items-center justify-center gap-3">
               <Button onClick={this.handleReset} variant="primary" size="md">
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="h-4 w-4" />
                 Try Again
               </Button>
-              <Button onClick={() => window.location.href = "/"} variant="secondary" size="md">
-                <Home className="w-4 h-4" />
+              <Button onClick={() => (window.location.href = "/")} variant="secondary" size="md">
+                <Home className="h-4 w-4" />
                 Go Home
               </Button>
             </div>
