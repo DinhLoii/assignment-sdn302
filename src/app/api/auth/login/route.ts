@@ -58,6 +58,12 @@ export async function POST(request: NextRequest) {
     return attachAuthCookie(response, token);
   } catch (error) {
     console.error("Login Error:", error);
+    const errString = String(error);
+    if (errString.includes("tenant/user") || errString.includes("ENOTFOUND")) {
+      return internalErrorResponse(
+        "Database is currently paused or unreachable on Supabase. Please resume the project on your Supabase dashboard."
+      );
+    }
     return internalErrorResponse();
   }
 }

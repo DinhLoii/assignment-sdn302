@@ -11,6 +11,9 @@ import {
   internalErrorResponse,
 } from "@/lib/api-response";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }

@@ -78,6 +78,8 @@ export function badRequestResponse(message: string = "Bad request"): NextRespons
   return errorResponse(message, 400);
 }
 
-export function internalErrorResponse(): NextResponse<ApiResponse> {
-  return errorResponse("Internal server error", 500);
+export function internalErrorResponse(
+  message: string = "Internal server error"
+): NextResponse<ApiResponse> {
+  return errorResponse(message, 500);
 }

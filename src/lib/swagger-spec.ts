@@ -2,9 +2,9 @@ export const swaggerSpec = {
   openapi: "3.0.3",
   info: {
     title: "TaskPulse API Documentation",
-    version: "2.0.0",
+    version: "3.0.0",
     description:
-      "Assignment 2 – Task & Team Management Application: Full-Stack RESTful CRUD API with JWT Authentication & Role-Based Access Control (RBAC).",
+      "Assignment 3 & 4 – Task & Team Management Application: Real-time Collaboration, Team Chat, Live Kanban Sync, In-App Notifications, and 3-Tier RBAC.",
     contact: {
       name: "DINH VAN LOI (QE190167)",
       url: "https://github.com/DinhLoii/assignment-sdn302",

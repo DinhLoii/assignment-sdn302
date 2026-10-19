@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { addMemberSchema } from "@/lib/validations/team";
 import { TeamRole } from "@prisma/client";
+import { triggerRealtimeEvent } from "@/lib/pusher";
 import {
   successResponse,
   errorResponse,
@@ -17,7 +18,7 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// POST /api/teams/:id/members - Add a member to a team by email (Owner only)
+// POST /api/teams/:id/members - Add a member to a team by email (Owner and Admin only)
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const auth = await getAuthUser(request);
@@ -29,15 +30,24 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const team = await prisma.team.findUnique({
       where: { id: teamId },
+      include: {
+        members: {
+          where: { userId: auth.id },
+        },
+      },
     });
 
     if (!team) {
       return notFoundResponse("Team");
     }
 
-    // Only owner can add members
-    if (team.ownerId !== auth.id) {
-      return forbiddenResponse("Only the team Owner can add new members");
+    // Role verification: Must be OWNER or ADMIN
+    const requesterMembership = team.members[0];
+    const isOwner = team.ownerId === auth.id || requesterMembership?.role === TeamRole.OWNER;
+    const isAdmin = requesterMembership?.role === TeamRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      return forbiddenResponse("Only team Owners and Admins can add new members");
     }
 
     const body = await request.json();
@@ -75,7 +85,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return errorResponse("This user is already a member of the team", 409);
     }
 
-    // Add member
+    // Add member as MEMBER
     const newMember = await prisma.teamMember.create({
       data: {
         teamId,
@@ -88,6 +98,39 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         },
       },
     });
+
+    // 1. Create In-App Notification for the invited user
+    const notification = await prisma.notification.create({
+      data: {
+        userId: invitedUser.id,
+        title: "Added to Team",
+        message: `You were added to team "${team.name}" by ${auth.name}.`,
+        type: "TEAM_INVITED",
+        link: `/teams/${teamId}`,
+      },
+    });
+
+    // 2. Log Activity
+    await prisma.activityLog.create({
+      data: {
+        teamId,
+        userId: auth.id,
+        action: "MEMBER_ADDED",
+        details: `added ${invitedUser.name} (${invitedUser.email}) to the team`,
+      },
+    });
+
+    // 3. Broadcast real-time events
+    await Promise.all([
+      // Real-time notification to the invited user
+      triggerRealtimeEvent(`user-${invitedUser.id}`, "notification:new", notification),
+      // Real-time member addition to team members
+      triggerRealtimeEvent(
+        [`team-${teamId}`, `presence-team-${teamId}`],
+        "member:added",
+        newMember
+      ),
+    ]);
 
     return successResponse(
       {
