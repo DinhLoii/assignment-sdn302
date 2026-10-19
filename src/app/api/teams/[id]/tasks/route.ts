@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { createTaskSchema } from "@/lib/validations/task";
 import { TaskPriority, TaskStatus } from "@prisma/client";
+import { triggerRealtimeEvent } from "@/lib/pusher";
 import {
   successResponse,
   errorResponse,
@@ -130,16 +131,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { id: teamId } = await params;
 
-    // Check membership: "Any member of a team can create tasks within that team"
-    const membership = await prisma.teamMember.findUnique({
-      where: {
-        teamId_userId: {
-          teamId,
-          userId: auth.id,
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      include: {
+        members: {
+          where: { userId: auth.id },
         },
       },
     });
 
+    if (!team) {
+      return errorResponse("Team not found", 404);
+    }
+
+    const membership = team.members[0];
     if (!membership) {
       return forbiddenResponse("You must be a member of this team to create tasks");
     }
@@ -189,6 +194,37 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         },
       },
     });
+
+    // 1. In-app notification for the assignee (if assigned to someone else)
+    if (assigneeId && assigneeId !== auth.id) {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: assigneeId,
+          title: "New Task Assigned",
+          message: `You were assigned to task "${title}" in "${team.name}" by ${auth.name}.`,
+          type: "TASK_ASSIGNED",
+          link: `/teams/${teamId}`,
+        },
+      });
+      await triggerRealtimeEvent(`user-${assigneeId}`, "notification:new", notification);
+    }
+
+    // 2. Activity Log
+    await prisma.activityLog.create({
+      data: {
+        teamId,
+        userId: auth.id,
+        action: "TASK_CREATED",
+        details: `created task "${title}"`,
+      },
+    });
+
+    // 3. Real-time broadcast to team
+    await triggerRealtimeEvent(
+      [`team-${teamId}`, `presence-team-${teamId}`],
+      "task:created",
+      newTask
+    );
 
     return successResponse(newTask, 201);
   } catch (error) {

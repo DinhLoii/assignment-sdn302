@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { updateTaskSchema } from "@/lib/validations/task";
-import { TaskPriority, TaskStatus } from "@prisma/client";
+import { TaskPriority, TaskStatus, TeamRole } from "@prisma/client";
+import { triggerRealtimeEvent } from "@/lib/pusher";
 import {
   successResponse,
   errorResponse,
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// PUT /api/tasks/:id - Update an existing task (team members can update details, status, priority, assignee)
+// PUT /api/tasks/:id - Update an existing task
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const auth = await getAuthUser(request);
@@ -75,10 +76,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return notFoundResponse("Task");
     }
 
-    // If task belongs to a team, user must be a member of the team
+    // Must be a member of the team
     if (existingTask.teamId && existingTask.team) {
-      const isMember = existingTask.team.members.length > 0;
-      if (!isMember) {
+      const membership = existingTask.team.members[0];
+      if (!membership) {
         return forbiddenResponse("You must be a member of the team to update this task");
       }
     }
@@ -92,8 +93,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const { title, description, status, priority, dueDate, assigneeId } = validation.data;
 
-    // If new assigneeId is provided, check if assignee is a member of the team
-    if (assigneeId && existingTask.teamId) {
+    // Verify assignee membership if changed
+    if (assigneeId && existingTask.teamId && assigneeId !== existingTask.assigneeId) {
       const assigneeMembership = await prisma.teamMember.findUnique({
         where: {
           teamId_userId: {
@@ -137,6 +138,45 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    const teamId = existingTask.teamId;
+
+    if (teamId) {
+      // 1. Notify new assignee if changed
+      if (assigneeId && assigneeId !== existingTask.assigneeId && assigneeId !== auth.id) {
+        const notification = await prisma.notification.create({
+          data: {
+            userId: assigneeId,
+            title: "Task Assigned to You",
+            message: `You were assigned to task "${updatedTask.title}" by ${auth.name}.`,
+            type: "TASK_ASSIGNED",
+            link: `/teams/${teamId}`,
+          },
+        });
+        await triggerRealtimeEvent(`user-${assigneeId}`, "notification:new", notification);
+      }
+
+      // 2. Activity Log
+      let actionDetail = `updated task "${updatedTask.title}"`;
+      if (status !== undefined && status !== existingTask.status) {
+        actionDetail = `moved task "${updatedTask.title}" to ${status.replace("_", " ")}`;
+      }
+      await prisma.activityLog.create({
+        data: {
+          teamId,
+          userId: auth.id,
+          action: "TASK_UPDATED",
+          details: actionDetail,
+        },
+      });
+
+      // 3. Real-time broadcast to team
+      await triggerRealtimeEvent(
+        [`team-${teamId}`, `presence-team-${teamId}`],
+        "task:updated",
+        updatedTask
+      );
+    }
+
     return successResponse(updatedTask);
   } catch (error) {
     console.error("PUT /api/tasks/:id Error:", error);
@@ -145,7 +185,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/tasks/:id - Delete a task
-// RBAC Requirement: "Only the task creator, the assignee, or the team Owner can delete a task."
+// RBAC: Owner and Admin can delete any task. Member can only delete tasks they created.
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const auth = await getAuthUser(request);
@@ -159,7 +199,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
       include: {
         team: {
-          select: { ownerId: true },
+          include: {
+            members: {
+              where: { userId: auth.id },
+            },
+          },
         },
       },
     });
@@ -168,20 +212,41 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return notFoundResponse("Task");
     }
 
-    // Role-based authorization check:
+    const teamId = existingTask.teamId;
+    const userMembership = existingTask.team?.members[0];
+    const isOwner =
+      existingTask.team?.ownerId === auth.id || userMembership?.role === TeamRole.OWNER;
+    const isAdmin = userMembership?.role === TeamRole.ADMIN;
     const isCreator = existingTask.creatorId === auth.id;
-    const isAssignee = existingTask.assigneeId === auth.id;
-    const isTeamOwner = existingTask.team?.ownerId === auth.id;
 
-    if (!isCreator && !isAssignee && !isTeamOwner) {
+    // RBAC check: Owner or Admin, or Member who created the task
+    if (!isOwner && !isAdmin && !isCreator) {
       return forbiddenResponse(
-        "Permission denied: Only the task creator, assignee, or team Owner can delete this task"
+        "Permission denied: Members can only delete their own created tasks, while Admins and Owners can delete any task"
       );
     }
 
     await prisma.task.delete({
       where: { id },
     });
+
+    if (teamId) {
+      // 1. Activity Log
+      await prisma.activityLog.create({
+        data: {
+          teamId,
+          userId: auth.id,
+          action: "TASK_DELETED",
+          details: `deleted task "${existingTask.title}"`,
+        },
+      });
+
+      // 2. Real-time broadcast
+      await triggerRealtimeEvent([`team-${teamId}`, `presence-team-${teamId}`], "task:deleted", {
+        id,
+        teamId,
+      });
+    }
 
     return successResponse({
       message: "Task deleted successfully",

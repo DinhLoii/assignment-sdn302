@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { CheckSquare, Users, LogIn, LogOut, UserPlus, Menu, X, User } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 
@@ -31,12 +32,12 @@ export const Navbar: React.FC = () => {
             <div className="flex flex-col">
               <span className="flex items-center gap-1.5 text-base font-bold tracking-tight text-slate-900 dark:text-white">
                 TaskPulse
-                <span className="rounded border border-emerald-200 bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 uppercase dark:border-emerald-800/50 dark:bg-emerald-950 dark:text-emerald-400">
-                  Ass2
+                <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 uppercase dark:border-indigo-800/50 dark:bg-indigo-950 dark:text-indigo-300">
+                  Ass3&4
                 </span>
               </span>
               <span className="hidden text-[11px] text-slate-500 sm:inline dark:text-slate-400">
-                Task & Team Management
+                Real-time Collaboration & Teams
               </span>
             </div>
           </Link>
@@ -66,7 +67,10 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Right Actions */}
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-2.5 md:flex">
+            {/* Notification Bell */}
+            {!isLoading && user && <NotificationBell currentUser={user} />}
+
             {/* Theme Toggle Button */}
             <ThemeToggle />
 
@@ -111,6 +115,7 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-2 md:hidden">
+            {!isLoading && user && <NotificationBell currentUser={user} />}
             <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

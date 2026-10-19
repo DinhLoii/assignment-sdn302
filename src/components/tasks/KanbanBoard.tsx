@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { TaskItem, TaskStatus, UserSummary } from "@/types";
+import { TaskItem, TaskStatus, TeamRole, UserSummary } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { Clock, Trash2, Edit3, CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
 interface KanbanBoardProps {
   tasks: TaskItem[];
   currentUser: UserSummary | null;
+  currentUserRole?: TeamRole;
   teamOwnerId?: string;
   onEditTask: (task: TaskItem) => void;
   onDeleteTask: (task: TaskItem) => void;
@@ -47,6 +48,7 @@ const COLUMNS: {
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   tasks,
   currentUser,
+  currentUserRole,
   teamOwnerId,
   onEditTask,
   onDeleteTask,
@@ -85,11 +87,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   const canDeleteTask = (task: TaskItem) => {
     if (!currentUser) return false;
-    return (
-      task.creatorId === currentUser.id ||
-      task.assigneeId === currentUser.id ||
-      teamOwnerId === currentUser.id
-    );
+    const isOwnerOrAdmin =
+      currentUserRole === "OWNER" || currentUserRole === "ADMIN" || teamOwnerId === currentUser.id;
+    if (isOwnerOrAdmin) return true;
+    return task.creatorId === currentUser.id;
   };
 
   return (
