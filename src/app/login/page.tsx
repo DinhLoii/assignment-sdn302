@@ -5,7 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
-import { CheckSquare, LogIn, Lock, Mail, Sparkles, KeyRound, ArrowRight } from "lucide-react";
+import {
+  CheckSquare,
+  LogIn,
+  Lock,
+  Mail,
+  Sparkles,
+  KeyRound,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Crown,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -14,121 +27,170 @@ export default function LoginPage() {
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSuccess, setIsSuccess] = React.useState(false);
 
-  // If already logged in, redirect to teams
+  // If already logged in, redirect to Home ("Trang chủ")
   React.useEffect(() => {
     if (user) {
-      router.push("/teams");
+      router.push("/");
     }
   }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please fill in both email and password");
+    if (!email.trim() || !password) {
+      toast.error("Please enter both email and password");
       return;
     }
 
     setIsSubmitting(true);
-    const result = await login(email, password);
-    setIsSubmitting(false);
+    const result = await login(email.trim(), password);
 
     if (result.success) {
-      toast.success("Welcome back! Logged in successfully.");
-      router.push("/teams");
+      setIsSuccess(true);
+      const userName = result.user?.name || "User";
+      toast.success(`Welcome back, ${userName}! Taking you to Home...`);
+
+      // Smooth visual feedback then navigate directly to Home ("Trang chủ")
+      setTimeout(() => {
+        router.push("/");
+        router.refresh();
+      }, 350);
     } else {
-      toast.error(result.error || "Login failed");
+      setIsSubmitting(false);
+      toast.error(result.error || "Login failed. Please check your credentials.");
     }
   };
 
-  const handleFillTestCredentials = () => {
-    setEmail("test@example.com");
+  const handleFillAccount = (testEmail: string, roleName: string) => {
+    setEmail(testEmail);
     setPassword("Password123!");
-    toast.info("Filled test account credentials!");
+    toast.info(`Filled ${roleName} credentials! Click Sign In to proceed.`);
   };
 
   return (
     <div className="mx-auto max-w-md space-y-6 py-8 sm:py-14">
       {/* Brand Header */}
       <div className="space-y-2 text-center">
-        <div className="mb-2 inline-flex rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 p-3 text-white shadow-lg shadow-indigo-500/25">
+        <div className="mb-2 inline-flex rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 p-3.5 text-white shadow-xl shadow-indigo-500/25 transition-transform duration-300 hover:scale-105">
           <CheckSquare className="h-8 w-8" />
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-          Welcome to TaskPulse
+          Sign In to TaskPulse
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Sign in to access your teams and manage collaborative tasks
+          Access your teams, real-time collaboration, and task boards
         </p>
       </div>
 
-      {/* Grader 1-Click Demo Helper Banner */}
-      <div className="space-y-2.5 rounded-xl border border-indigo-200 bg-indigo-50/80 p-4 text-xs text-indigo-900 dark:border-indigo-800/60 dark:bg-indigo-950/40 dark:text-indigo-200">
+      {/* 1-Click Fast Login Helper for Grading & Evaluation */}
+      <div className="space-y-3 rounded-2xl border border-indigo-200/90 bg-indigo-50/70 p-4.5 text-xs text-indigo-950 shadow-sm backdrop-blur-sm dark:border-indigo-800/60 dark:bg-indigo-950/40 dark:text-indigo-200">
         <div className="flex items-center justify-between font-semibold">
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-200">
             <KeyRound className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            Grading Test Account (Ready to Use)
+            Quick Test Accounts (Assignment 3 & 4)
           </span>
-          <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
             Pre-verified
           </span>
         </div>
-        <div className="rounded-lg border border-indigo-100 bg-white/70 p-2 font-mono text-[11px] text-slate-600 dark:border-indigo-900/50 dark:bg-slate-900/60 dark:text-slate-300">
-          <div>
-            Email:{" "}
-            <strong className="text-indigo-600 dark:text-indigo-400">test@example.com</strong>
-          </div>
-          <div>
-            Password: <strong className="text-indigo-600 dark:text-indigo-400">Password123!</strong>
-          </div>
+
+        <p className="text-[11px] text-slate-600 dark:text-slate-400">
+          Both test accounts share the same team <strong>TaskPulse Core Platform</strong> for
+          seamless real-time testing across two browser sessions:
+        </p>
+
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {/* Account 1: Owner */}
+          <button
+            type="button"
+            onClick={() => handleFillAccount("test@example.com", "Owner")}
+            className="flex cursor-pointer flex-col rounded-xl border border-indigo-200 bg-white/90 p-2.5 text-left transition-all hover:border-indigo-400 hover:shadow-md dark:border-indigo-900 dark:bg-slate-900/80"
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                <Crown className="h-3 w-3" />
+                Account 1 (Owner)
+              </span>
+              <Sparkles className="h-3 w-3 text-indigo-500" />
+            </div>
+            <div className="mt-1 font-mono text-[10px] text-slate-700 dark:text-slate-300">
+              test@example.com
+            </div>
+          </button>
+
+          {/* Account 2: Admin */}
+          <button
+            type="button"
+            onClick={() => handleFillAccount("alice@example.com", "Admin")}
+            className="flex cursor-pointer flex-col rounded-xl border border-indigo-200 bg-white/90 p-2.5 text-left transition-all hover:border-indigo-400 hover:shadow-md dark:border-indigo-900 dark:bg-slate-900/80"
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400">
+                <ShieldCheck className="h-3 w-3" />
+                Account 2 (Admin)
+              </span>
+              <Sparkles className="h-3 w-3 text-indigo-500" />
+            </div>
+            <div className="mt-1 font-mono text-[10px] text-slate-700 dark:text-slate-300">
+              alice@example.com
+            </div>
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleFillTestCredentials}
-          className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          Click to Auto-fill Test Account
-        </button>
       </div>
 
-      {/* Login Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 backdrop-blur-md sm:p-8 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Main Login Form Card */}
+      <div
+        className={`rounded-3xl border bg-white p-6 shadow-xl backdrop-blur-md transition-all duration-300 sm:p-8 dark:bg-slate-900/80 ${
+          isSuccess
+            ? "border-emerald-500 shadow-emerald-500/10 ring-2 ring-emerald-500/20"
+            : "border-slate-200 shadow-slate-200/50 dark:border-slate-800 dark:shadow-none"
+        }`}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4.5">
           <div>
             <label className="mb-1.5 block text-xs font-semibold tracking-wider text-slate-700 uppercase dark:text-slate-300">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute top-3.5 left-3 h-4 w-4 text-slate-400" />
+              <Mail className="pointer-events-none absolute top-3.5 left-3.5 h-4 w-4 text-slate-400" />
               <input
                 type="email"
                 required
+                disabled={isSubmitting || isSuccess}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-3.5 pl-9 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-3.5 pl-10 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:bg-slate-900"
               />
             </div>
           </div>
 
           <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label className="block text-xs font-semibold tracking-wider text-slate-700 uppercase dark:text-slate-300">
-                Password
-              </label>
-            </div>
+            <label className="mb-1.5 block text-xs font-semibold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+              Password
+            </label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute top-3.5 left-3 h-4 w-4 text-slate-400" />
+              <Lock className="pointer-events-none absolute top-3.5 left-3.5 h-4 w-4 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
+                disabled={isSubmitting || isSuccess}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-3.5 pl-9 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-10 pl-10 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:bg-slate-900"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 focus:outline-none dark:hover:text-slate-200"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
           </div>
 
@@ -136,11 +198,23 @@ export default function LoginPage() {
             type="submit"
             variant="primary"
             size="lg"
-            isLoading={isSubmitting}
-            className="mt-2 w-full cursor-pointer"
+            isLoading={isSubmitting && !isSuccess}
+            disabled={isSubmitting || isSuccess}
+            className={`mt-2 w-full cursor-pointer transition-all duration-300 ${
+              isSuccess ? "bg-emerald-600 hover:bg-emerald-600" : ""
+            }`}
           >
-            <LogIn className="h-4 w-4" />
-            Sign In
+            {isSuccess ? (
+              <span className="flex items-center gap-2 font-bold text-white">
+                <CheckCircle2 className="h-4 w-4 animate-bounce" />
+                Signed In! Taking you to Home...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <LogIn className="h-4 w-4" />
+                Sign In to Account
+              </span>
+            )}
           </Button>
         </form>
 

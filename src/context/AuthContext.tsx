@@ -7,12 +7,15 @@ import { UserSummary } from "@/types";
 interface AuthContextType {
   user: UserSummary | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string; user?: UserSummary }>;
   register: (
     name: string,
     email: string,
     password: string
-  ) => Promise<{ success: boolean; error?: string }>;
+  ) => Promise<{ success: boolean; error?: string; user?: UserSummary }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -58,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.success && data.data?.user) {
         setUser(data.data.user);
-        return { success: true };
+        return { success: true, user: data.data.user };
       } else {
         return {
           success: false,
@@ -84,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.success && data.data?.user) {
         setUser(data.data.user);
-        return { success: true };
+        return { success: true, user: data.data.user };
       } else {
         return {
           success: false,
