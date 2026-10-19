@@ -1,9 +1,10 @@
 # TaskPulse – Task & Team Management Web Application
 
-> **Assignment 2:** Full-Stack CRUD API with Authentication, Team Management, Role-Based Access Control (RBAC), and Kanban Board.
+> **Assignment 3 & 4:** Real-time Collaboration, Team Chat, Live Task Board Sync, In-App Notifications & Advanced 3-Tier RBAC.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16+-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19+-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
+[![Pusher](https://img.shields.io/badge/Pusher-Real--time-brightgreen?style=flat&logo=pusher)](https://pusher.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-7+-2D3748?style=flat&logo=prisma)](https://www.prisma.io/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat&logo=supabase)](https://supabase.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
@@ -19,15 +20,17 @@
 - **Class:** SE19C
 - **Live Demo (Vercel):** [TaskPulse | Task & Team Management Application](https://assignment-sdn302.vercel.app/)
 - **GitHub Repository:** [https://github.com/DinhLoii/assignment-sdn302](https://github.com/DinhLoii/assignment-sdn302)
-- **Grading Test Account:** `test@example.com` / `Password123!` (Ready for immediate login, no confirmation link needed)
+- **Grading Test Account 1 (Owner):** `test@example.com` / `Password123!`
+- **Grading Test Account 2 (Admin - Same Team):** `alice@example.com` / `Password123!`
+- **Official Submission File:** [`ASSIGNMENT_3_SUBMISSION.md`](./ASSIGNMENT_3_SUBMISSION.md)
 
 ---
 
 ## 🌟 Overview
 
-**TaskPulse** is a production-ready, full-stack **Task & Team Management Web Application** built with **Next.js App Router**, **Prisma 7 ORM**, and **Supabase Cloud PostgreSQL**.
+**TaskPulse** is a production-ready, full-stack **Task & Team Management Web Application** built with **Next.js 16 App Router**, **Prisma 7 ORM**, **Supabase PostgreSQL**, and **Pusher Channels**.
 
-In **Assignment 2**, the project implements a complete **JWT Authentication** flow, team workspace management, role-based access control (Owner & Member), invite-by-email functionality, task delegation, and an interactive **Kanban Board** with drag-and-drop task progression.
+In **Assignment 3 & 4**, the platform extends into a high-performance **Real-time Collaborative Workspace** featuring team chat rooms with persistent history, live-updating Kanban task boards across multiple browser sessions, in-app notification center, team audit logs, and an advanced 3-tier permission hierarchy (Owner, Admin, Member).
 
 ---
 
@@ -56,6 +59,32 @@ In **Assignment 2**, the project implements a complete **JWT Authentication** fl
 - **Modern UI & Micro-interactions**:
   - Slate dark palette, glassmorphism, animated status badges, and Sonner toast notifications.
   - 1-click test credentials autofill on the login page for evaluator convenience.
+
+## ✨ Assignment 3 & 4 Features
+
+- **Real-time Team Chat**:
+  - Dedicated real-time chat room per team with full message history persisted in database.
+  - WebSocket instant message delivery via **Pusher Channels** with zero page refresh.
+  - Bonus: **Typing indicators** ("Alice is typing...").
+  - Bonus: **Online/offline presence badge** displaying active members in chat room.
+  - Bonus: **Attachment support** (image preview and file URLs).
+- **Live Task Board Updates (Kanban Sync)**:
+  - Collaborative drag-and-drop: moving a task between `To Do`, `In Progress`, and `Done` reflects live on other users' screens.
+  - Instant creation (`task:created`), update (`task:updated`), and deletion (`task:deleted`).
+- **In-App Notification Center**:
+  - Interactive notification bell in Navbar with dynamic unread counter badge.
+  - Notifications triggered when assigned to a task (`TASK_ASSIGNED`), added to a team (`TEAM_INVITED`), or when role is modified (`ROLE_UPDATED`).
+  - Single-click to mark as read and navigate; "Mark all as read" button.
+  - Bonus: **Web Browser Push Notifications** via browser Notification API.
+- **Advanced 3-Tier Role & Permission Hierarchy (RBAC)**:
+  - **Owner**: Full control — manage members, modify roles, delete team, delete any task.
+  - **Admin**: Manage members (add, promote/demote Member, remove Member) and manage all tasks, but **cannot delete the team**.
+  - **Member**: Create and manage own tasks, collaborate on chat, view team tasks. Cannot manage members or delete others' tasks.
+  - Enforced strictly on both **Server Route Handlers** (403 Forbidden) and **UI controls** (disabled/hidden).
+- **Team Activity Log & Audit Trail (Bonus)**:
+  - Dedicated Audit Trail timeline tracking who performed what action and when.
+- **Dual-Session Evaluation Accounts**:
+  - Pre-seeded Test Account 1 (`test@example.com` / `Password123!`) and Test Account 2 (`alice@example.com` / `Password123!`) in the **SAME** team `TaskPulse Core Platform` for immediate real-time testing across two browser windows.
 
 ---
 
@@ -181,31 +210,34 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 Interactive API documentation with live execution is available via **Swagger UI** at [`/docs`](http://localhost:3000/docs) (or [`/api/docs`](http://localhost:3000/api/docs)).
 
 ### Authentication Endpoints
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `POST` | `/api/auth/register` | Register new user account | No |
-| `POST` | `/api/auth/login` | Login with email & password (sets HTTP-Only cookie) | No |
-| `POST` | `/api/auth/logout` | Terminate session & clear cookies | No |
-| `GET` | `/api/auth/me` | Fetch currently logged-in user profile | **Yes** |
+
+| Method | Endpoint             | Description                                         | Auth Required |
+| :----- | :------------------- | :-------------------------------------------------- | :-----------: |
+| `POST` | `/api/auth/register` | Register new user account                           |      No       |
+| `POST` | `/api/auth/login`    | Login with email & password (sets HTTP-Only cookie) |      No       |
+| `POST` | `/api/auth/logout`   | Terminate session & clear cookies                   |      No       |
+| `GET`  | `/api/auth/me`       | Fetch currently logged-in user profile              |    **Yes**    |
 
 ### Teams & RBAC Endpoints
-| Method | Endpoint | Description | Authorization |
-| :--- | :--- | :--- | :---: |
-| `GET` | `/api/teams` | List teams current user belongs to | Authenticated |
-| `POST` | `/api/teams` | Create new team (creator becomes `OWNER`) | Authenticated |
-| `GET` | `/api/teams/:id` | Get team details, members, and tasks | Team Member |
-| `PUT` | `/api/teams/:id` | Update team name or description | **Team Owner** |
-| `DELETE` | `/api/teams/:id` | Delete team and cascade tasks/members | **Team Owner** |
-| `POST` | `/api/teams/:id/members` | Add member to team by registered email | **Team Owner** |
-| `DELETE` | `/api/teams/:id/members/:userId` | Remove member from team | **Team Owner** |
+
+| Method   | Endpoint                         | Description                               | Authorization  |
+| :------- | :------------------------------- | :---------------------------------------- | :------------: |
+| `GET`    | `/api/teams`                     | List teams current user belongs to        | Authenticated  |
+| `POST`   | `/api/teams`                     | Create new team (creator becomes `OWNER`) | Authenticated  |
+| `GET`    | `/api/teams/:id`                 | Get team details, members, and tasks      |  Team Member   |
+| `PUT`    | `/api/teams/:id`                 | Update team name or description           | **Team Owner** |
+| `DELETE` | `/api/teams/:id`                 | Delete team and cascade tasks/members     | **Team Owner** |
+| `POST`   | `/api/teams/:id/members`         | Add member to team by registered email    | **Team Owner** |
+| `DELETE` | `/api/teams/:id/members/:userId` | Remove member from team                   | **Team Owner** |
 
 ### Tasks & RBAC Endpoints
-| Method | Endpoint | Description | Authorization |
-| :--- | :--- | :--- | :---: |
-| `GET` | `/api/teams/:id/tasks` | List team tasks (with status, priority, search, page) | Team Member |
-| `POST` | `/api/teams/:id/tasks` | Create task within team and assign member | Team Member |
-| `PUT` | `/api/tasks/:id` | Update task details, status, priority, assignee | Team Member |
-| `DELETE` | `/api/tasks/:id` | Delete task | **Creator / Assignee / Owner** |
+
+| Method   | Endpoint               | Description                                           |         Authorization          |
+| :------- | :--------------------- | :---------------------------------------------------- | :----------------------------: |
+| `GET`    | `/api/teams/:id/tasks` | List team tasks (with status, priority, search, page) |          Team Member           |
+| `POST`   | `/api/teams/:id/tasks` | Create task within team and assign member             |          Team Member           |
+| `PUT`    | `/api/tasks/:id`       | Update task details, status, priority, assignee       |          Team Member           |
+| `DELETE` | `/api/tasks/:id`       | Delete task                                           | **Creator / Assignee / Owner** |
 
 ---
 

@@ -167,11 +167,12 @@ export default function HomePage() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-700 dark:text-indigo-300">
             <Sparkles className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-            Assignment 2 &bull; JWT Auth &bull; Team Workspaces &bull; Role-Based Access Control
+            Assignment 3 & 4 &bull; Real-time WebSockets &bull; Team Chat &bull; Live Kanban &bull;
+            In-App Notifications
           </div>
 
           <h1 className="text-3xl leading-tight font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-            Task & Team Management
+            Real-time Task & Team Management
           </h1>
 
           <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300">
@@ -179,13 +180,14 @@ export default function HomePage() {
               <>
                 Welcome back,{" "}
                 <strong className="text-indigo-600 dark:text-indigo-400">{user.name}</strong>!
-                Access your team workspaces, delegate tasks to members, or manage items on
-                interactive Kanban boards.
+                Collaborate in real time with your teams: chat with teammates, move tasks on
+                live-updating Kanban boards, and receive instant in-app notifications.
               </>
             ) : (
               <>
-                A full-stack collaboration platform with user authentication, team workspaces,
-                role-based member management (Owner & Member), and interactive task tracking.
+                A modern real-time collaboration platform featuring instant team chat, live-updating
+                Kanban boards across sessions, in-app notification center, and advanced 3-tier role
+                permissions (Owner, Admin, Member).
               </>
             )}
           </p>
