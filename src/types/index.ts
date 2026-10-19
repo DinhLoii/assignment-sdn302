@@ -1,6 +1,6 @@
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
-export type TeamRole = "OWNER" | "MEMBER" | "ADMIN";
+export type TeamRole = "OWNER" | "ADMIN" | "MEMBER";
 
 export interface UserSummary {
   id: string;
@@ -52,6 +52,45 @@ export interface TaskItem {
     id: string;
     name: string;
   } | null;
+}
+
+export interface MessageItem {
+  id: string;
+  content: string;
+  attachmentUrl?: string | null;
+  teamId: string;
+  senderId: string;
+  createdAt: string | Date;
+  sender?: UserSummary;
+}
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: "TASK_ASSIGNED" | "TEAM_INVITED" | "ROLE_UPDATED" | "SYSTEM" | string;
+  link?: string | null;
+  isRead: boolean;
+  createdAt: string | Date;
+}
+
+export interface ActivityLogItem {
+  id: string;
+  teamId: string;
+  userId: string;
+  action: string;
+  details?: string | null;
+  createdAt: string | Date;
+  user?: UserSummary;
+}
+
+export interface PresenceMember {
+  id: string;
+  info: {
+    name: string;
+    email: string;
+  };
 }
 
 export interface TaskStatsData {

@@ -9,40 +9,54 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("🌱 Starting database seeding for Assignment 2...");
+  console.log("🌱 Starting database seeding for Assignment 3 & 4...");
 
   const salt = await bcrypt.genSalt(10);
   const defaultPasswordHash = await bcrypt.hash("Password123!", salt);
 
-  // 1. Create Grader Test Account
+  // 1. Create Grader Test Account 1 (Owner)
   const testUser = await prisma.user.upsert({
     where: { email: "test@example.com" },
     update: {
       password: defaultPasswordHash,
     },
     create: {
-      name: "Demo Evaluator",
+      name: "Demo Evaluator (Owner)",
       email: "test@example.com",
       password: defaultPasswordHash,
     },
   });
-  console.log("✓ Grader Test User created/ready:", testUser.email);
+  console.log("✓ Grader Test User 1 created/ready:", testUser.email);
 
-  // 2. Create Colleague Account
+  // 2. Create Grader Test Account 2 (Admin - Same Team for multi-session real-time testing)
   const aliceUser = await prisma.user.upsert({
     where: { email: "alice@example.com" },
     update: {
       password: defaultPasswordHash,
     },
     create: {
-      name: "Alice Chen",
+      name: "Alice Chen (Admin)",
       email: "alice@example.com",
       password: defaultPasswordHash,
     },
   });
-  console.log("✓ Colleague User created/ready:", aliceUser.email);
+  console.log("✓ Grader Test User 2 created/ready:", aliceUser.email);
 
-  // 3. Create Team 1: Owned by Test User
+  // 3. Create Colleague Account 3 (Member)
+  const bobUser = await prisma.user.upsert({
+    where: { email: "bob@example.com" },
+    update: {
+      password: defaultPasswordHash,
+    },
+    create: {
+      name: "Bob Williams (Member)",
+      email: "bob@example.com",
+      password: defaultPasswordHash,
+    },
+  });
+  console.log("✓ Colleague User 3 created/ready:", bobUser.email);
+
+  // 4. Create Team 1: "TaskPulse Core Platform" (Primary Testing Team)
   let team1 = await prisma.team.findFirst({
     where: { name: "TaskPulse Core Platform" },
   });
@@ -52,14 +66,14 @@ async function main() {
       data: {
         name: "TaskPulse Core Platform",
         description:
-          "Primary engineering workspace for backend APIs, auth, and database architecture.",
+          "Primary engineering workspace with real-time WebSockets, live chat, and advanced RBAC.",
         ownerId: testUser.id,
       },
     });
     console.log("✓ Created team 1:", team1.name);
   }
 
-  // Ensure members for Team 1
+  // Ensure members for Team 1: TestUser = OWNER, Alice = ADMIN, Bob = MEMBER
   await prisma.teamMember.upsert({
     where: { teamId_userId: { teamId: team1.id, userId: testUser.id } },
     update: { role: TeamRole.OWNER },
@@ -68,11 +82,17 @@ async function main() {
 
   await prisma.teamMember.upsert({
     where: { teamId_userId: { teamId: team1.id, userId: aliceUser.id } },
-    update: { role: TeamRole.MEMBER },
-    create: { teamId: team1.id, userId: aliceUser.id, role: TeamRole.MEMBER },
+    update: { role: TeamRole.ADMIN },
+    create: { teamId: team1.id, userId: aliceUser.id, role: TeamRole.ADMIN },
   });
 
-  // 4. Create Team 2: Owned by Alice, Test User is a Member
+  await prisma.teamMember.upsert({
+    where: { teamId_userId: { teamId: team1.id, userId: bobUser.id } },
+    update: { role: TeamRole.MEMBER },
+    create: { teamId: team1.id, userId: bobUser.id, role: TeamRole.MEMBER },
+  });
+
+  // 5. Create Team 2: "Design & UX Innovations"
   let team2 = await prisma.team.findFirst({
     where: { name: "Design & UX Innovations" },
   });
@@ -88,7 +108,6 @@ async function main() {
     console.log("✓ Created team 2:", team2.name);
   }
 
-  // Ensure members for Team 2
   await prisma.teamMember.upsert({
     where: { teamId_userId: { teamId: team2.id, userId: aliceUser.id } },
     update: { role: TeamRole.OWNER },
@@ -101,12 +120,11 @@ async function main() {
     create: { teamId: team2.id, userId: testUser.id, role: TeamRole.MEMBER },
   });
 
-  // 5. Seed Tasks for Team 1
+  // 6. Seed Tasks for Team 1
   const team1Tasks = [
     {
-      title: "Set up JWT Authentication & Route Guards",
-      description:
-        "Implement secure HTTP-only cookie JWT tokens with bcryptjs password hashing and role validation.",
+      title: "Real-time Team Chat with Message Persistence",
+      description: "Enable WebSockets with Pusher for real-time delivery and database persistence.",
       status: TaskStatus.DONE,
       priority: TaskPriority.HIGH,
       dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -114,34 +132,34 @@ async function main() {
       creatorId: testUser.id,
     },
     {
-      title: "Build Kanban Board with Drag & Drop",
+      title: "Live Task Board Kanban Sync Across Sessions",
       description:
-        "Allow team members to drag tasks across To Do, In Progress, and Done columns with smooth animation.",
+        "Synchronize task drag-and-drop, creation, edits, and deletions live across multiple browser windows.",
       status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.HIGH,
-      dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       assigneeId: aliceUser.id,
       creatorId: testUser.id,
     },
     {
-      title: "Implement Team Member Invitation by Email",
+      title: "In-App Notification Bell & Badge Counter",
       description:
-        "Owners can add members to team by existing email with immediate access and role assignment.",
+        "Notify team members when assigned to tasks or added to teams with mark-as-read controls.",
       status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.MEDIUM,
+      dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      assigneeId: bobUser.id,
+      creatorId: aliceUser.id,
+    },
+    {
+      title: "Advanced 3-Tier RBAC (Owner, Admin, Member)",
+      description:
+        "Strictly enforce permission hierarchy on both server Route Handlers and UI controls.",
+      status: TaskStatus.TODO,
+      priority: TaskPriority.HIGH,
       dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       assigneeId: testUser.id,
       creatorId: testUser.id,
-    },
-    {
-      title: "Optimize Task Filtering and Search Query",
-      description:
-        "Enable fast client and server-side filtering by status, priority, and assignee.",
-      status: TaskStatus.TODO,
-      priority: TaskPriority.LOW,
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      assigneeId: aliceUser.id,
-      creatorId: aliceUser.id,
     },
   ];
 
@@ -159,44 +177,114 @@ async function main() {
     }
   }
 
-  // 6. Seed Tasks for Team 2
-  const team2Tasks = [
+  // 7. Seed Initial Chat Messages for Team 1
+  const initialMessages = [
     {
-      title: "Create Glassmorphic Color Palette Tokens",
-      description:
-        "Define modern slate, indigo, and violet accents tailored for dark and light modes.",
-      status: TaskStatus.DONE,
-      priority: TaskPriority.MEDIUM,
-      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      assigneeId: aliceUser.id,
-      creatorId: aliceUser.id,
+      content:
+        "Welcome to the TaskPulse Core Platform chat room! Real-time messaging is now active.",
+      senderId: testUser.id,
+      createdAt: new Date(Date.now() - 30 * 60 * 1000),
     },
     {
-      title: "Audit UI Accessibility & Contrast Ratios",
-      description: "Ensure all status and priority badges satisfy WCAG AAA contrast guidelines.",
-      status: TaskStatus.TODO,
-      priority: TaskPriority.MEDIUM,
-      dueDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
-      assigneeId: testUser.id,
-      creatorId: aliceUser.id,
+      content: "Hello team! I'm testing the real-time sync between Account 1 and Account 2.",
+      senderId: aliceUser.id,
+      createdAt: new Date(Date.now() - 20 * 60 * 1000),
+    },
+    {
+      content:
+        "Awesome! You can test moving tasks on the Kanban board or sending messages in two browser windows simultaneously.",
+      senderId: testUser.id,
+      createdAt: new Date(Date.now() - 10 * 60 * 1000),
     },
   ];
 
-  for (const t of team2Tasks) {
-    const existing = await prisma.task.findFirst({
-      where: { title: t.title, teamId: team2.id },
+  for (const m of initialMessages) {
+    const exists = await prisma.message.findFirst({
+      where: { content: m.content, teamId: team1.id },
     });
-    if (!existing) {
-      await prisma.task.create({
+    if (!exists) {
+      await prisma.message.create({
         data: {
-          ...t,
-          teamId: team2.id,
+          ...m,
+          teamId: team1.id,
         },
       });
     }
   }
 
-  console.log("✅ Database seeding completed successfully!");
+  // 8. Seed Initial Notifications
+  const initialNotifications = [
+    {
+      userId: testUser.id,
+      title: "Welcome to Assignment 3 & 4",
+      message:
+        "Real-time collaboration, team chat, and notifications are now ready for evaluation.",
+      type: "SYSTEM",
+      link: `/teams/${team1.id}`,
+      isRead: false,
+    },
+    {
+      userId: aliceUser.id,
+      title: "Promoted to Team Admin",
+      message: `You were promoted to Admin in "${team1.name}" by ${testUser.name}.`,
+      type: "ROLE_UPDATED",
+      link: `/teams/${team1.id}`,
+      isRead: false,
+    },
+    {
+      userId: aliceUser.id,
+      title: "Task Assigned to You",
+      message: `You were assigned to task "Live Task Board Kanban Sync Across Sessions".`,
+      type: "TASK_ASSIGNED",
+      link: `/teams/${team1.id}`,
+      isRead: false,
+    },
+  ];
+
+  for (const n of initialNotifications) {
+    const exists = await prisma.notification.findFirst({
+      where: { userId: n.userId, title: n.title },
+    });
+    if (!exists) {
+      await prisma.notification.create({ data: n });
+    }
+  }
+
+  // 9. Seed Activity Logs
+  const initialLogs = [
+    {
+      teamId: team1.id,
+      userId: testUser.id,
+      action: "ROLE_UPDATED",
+      details: "promoted Alice Chen to Admin",
+      createdAt: new Date(Date.now() - 40 * 60 * 1000),
+    },
+    {
+      teamId: team1.id,
+      userId: testUser.id,
+      action: "TASK_CREATED",
+      details: 'created task "Real-time Team Chat with Message Persistence"',
+      createdAt: new Date(Date.now() - 35 * 60 * 1000),
+    },
+    {
+      teamId: team1.id,
+      userId: aliceUser.id,
+      action: "TASK_UPDATED",
+      details: 'moved task "Live Task Board Kanban Sync Across Sessions" to IN PROGRESS',
+      createdAt: new Date(Date.now() - 15 * 60 * 1000),
+    },
+  ];
+
+  for (const l of initialLogs) {
+    const exists = await prisma.activityLog.findFirst({
+      where: { teamId: l.teamId, action: l.action, details: l.details },
+    });
+    if (!exists) {
+      await prisma.activityLog.create({ data: l });
+    }
+  }
+
+  console.log("✅ Database seeding for Assignment 3 & 4 completed successfully!");
 }
 
 main()
